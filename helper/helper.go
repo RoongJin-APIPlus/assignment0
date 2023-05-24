@@ -22,14 +22,17 @@ func (i *arrayFlags) Set(value string) error {
 	return nil
 }
 
-func GetRequest() {
+func GetRequest() { //------------ os.Args reads the arguments from the command line -----------
 	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
 	getHelp := getCmd.Bool("help", false, "help")
 
 	getCmd.Parse(os.Args[2:])
 	if *getHelp {
 		fmt.Println("syntax: httpcli get <URL> [FLAGS...]")
-	} else if len(os.Args) > 3 {
+		return
+	}
+
+	if len(os.Args) > 3 {
 		var queryFlags arrayFlags
 		var headerFlags arrayFlags
 		getCmd.Var(&queryFlags, "query", "query")
@@ -41,7 +44,10 @@ func GetRequest() {
 
 		fmt.Println("Request Sent to ", url[:len(url)-1])
 		client := http.Client{}
-		req, _ := http.NewRequest("GET", url[:len(url)-1], nil)
+		req, err := http.NewRequest("GET", url[:len(url)-1], nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		getCmd.Var(&headerFlags, "header", "header")
 		getCmd.Parse(os.Args[3:])
@@ -56,17 +62,19 @@ func GetRequest() {
 		} else {
 			fmt.Println(resp)
 		}
+
+		return
+	}
+
+	resp, e := http.Get("https://" + os.Args[2])
+	if e != nil {
+		log.Fatal(e)
 	} else {
-		resp, e := http.Get("https://" + os.Args[2])
-		if e != nil {
-			log.Fatal(e)
-		} else {
-			fmt.Println(resp)
-		}
+		fmt.Println(resp)
 	}
 }
 
-func PostRequest() {
+func PostRequest() { //------------ os.Args reads the arguments from the command line -----------
 	postCmd := flag.NewFlagSet("post", flag.ExitOnError)
 	postHelp := postCmd.Bool("help", false, "help")
 	postJSON := postCmd.Bool("json", false, "json")
@@ -108,7 +116,7 @@ func PostRequest() {
 	}
 }
 
-func DeleteRequest() {
+func DeleteRequest() { //------------ os.Args reads the arguments from the command line -----------
 	deleteCmd := flag.NewFlagSet("delete", flag.ExitOnError)
 	deleteHelp := deleteCmd.Bool("help", false, "help")
 
@@ -127,7 +135,7 @@ func DeleteRequest() {
 	}
 }
 
-func PutRequest() {
+func PutRequest() { //------------ os.Args reads the arguments from the command line -----------
 	putCmd := flag.NewFlagSet("put", flag.ExitOnError)
 	putHelp := putCmd.Bool("help", false, "help")
 	postCmd := flag.NewFlagSet("post", flag.ExitOnError)
